@@ -45,7 +45,7 @@ public class ChatServer {
 	}
 	
 	public static void log(String log) {
-		System.out.println("[Echo Server#"+ Thread.currentThread().getId() +"] "+ log);
+		System.out.println("[Server#"+ Thread.currentThread().getId() +"] "+ log);
 		/*
 		main thread id: 1
 		[Echo Server#1] binding 192.168.1.32:8000

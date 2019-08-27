@@ -2,18 +2,21 @@ package chat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 
 public class ChatClientThread extends Thread {
-	private BufferedReader br;
+	private Socket socket;
 	
-	public ChatClientThread(BufferedReader br) {
-		this.br = br;
+	public ChatClientThread(Socket socket) {
+		this.socket = socket;
 	}
 	
 	@Override
 	public void run() {
 		
 		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 			while(true) {
 				
 				// 5. 데이터 읽기
@@ -30,7 +33,11 @@ public class ChatClientThread extends Thread {
 			e.printStackTrace();
 		} finally {
 			try {
-				br.close();
+				if(socket != null && !socket.isClosed()) {
+					ChatClient.log("socket is closed");
+					socket.close();
+				}
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

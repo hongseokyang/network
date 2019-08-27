@@ -26,9 +26,6 @@ public class ChatServerThread extends Thread {
 		ChatServer.log("connected from client[" + inetRemoteSocketAddress.getAddress().getHostAddress() + ":" + inetRemoteSocketAddress.getPort()+"]");
 					
 		try {
-			user = new ChatUser();
-			users.add(user);
-			
 			// 4. IOStream 받아오기
 			InputStream is = socket.getInputStream();
 			OutputStream os = socket.getOutputStream();
@@ -36,29 +33,32 @@ public class ChatServerThread extends Thread {
 			// 버퍼 보조스트림
 			BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), true);
-			
-			user.setPw(pw);
-			user.setName(br.readLine());
-			
-			doJoin();
-			
+
 			while(true) {
 				// 5. 데이터 읽기(수신)
-				String data = br.readLine();
-				System.out.println(data);
-				if("quit".equals(data)) {
-					user.getPw().println("quit");
-					break;
-				}
-				if(data == null) {
-					ChatServer.log("closed by client");
-					break;
-				}
-				ChatServer.log("received: "+ data);
+				String request = br.readLine();
 				
-				doMessage(data);
+				if( request == null || "quit".equals( request ) ) {
+					doQuit(pw);
+					break;
+				}
+				
+				String[] tokens = request.split( ":" );
+				
+				if( "join".equals( tokens[0] ) ) {
+
+				   doJoin( tokens[1], pw );
+
+				} else if( "message".equals( tokens[0] ) ) {
+				   
+				   doMessage( tokens[1] );
+
+				} else {
+
+				   ChatServer.log( "에러:알수 없는 요청(" + tokens[0] + ")" );
+				}
+				
 			}
-			doQuit();
 			
 		} catch (SocketException e) {
 			ChatServer.log("abnormal closed by client");	// 비정상 종료
@@ -76,8 +76,12 @@ public class ChatServerThread extends Thread {
 		}
 	}
 	
-	private void doJoin() {
-		user.getPw().println("채팅에 참여합니다.");
+	private void doJoin(String name, PrintWriter pw) {
+		user = new ChatUser();
+		users.add(user);
+		user.setName(name);
+		user.setPw(pw);
+		pw.println("채팅에 참여합니다.");
 		broadcast(" 님이 입장하였습니다.");
 	}
 	
@@ -96,7 +100,8 @@ public class ChatServerThread extends Thread {
 		}
 	}
 	
-	private void doQuit() {
+	private void doQuit(PrintWriter pw) {
+		pw.println("quit");
 		broadcast(" 님이 퇴장하였습니다.");
 	}
 	
@@ -107,7 +112,7 @@ public class ChatServerThread extends Thread {
 		result = prime * result + ((socket == null) ? 0 : socket.hashCode());
 		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
-	}
+	} 
 
 	@Override
 	public boolean equals(Object obj) {

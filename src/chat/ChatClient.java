@@ -1,8 +1,6 @@
 package chat;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
@@ -10,14 +8,13 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class ChatClient {
-	private static String SERVER_IP = "192.168.1.32";
+	private static String SERVER_IP = "192.168.56.1";
 	private static int SERVER_PORT = 8000;
 	
 	public static void main(String[] args) {
 
 		Scanner sc = null;
 		Socket socket = null;
-		BufferedReader br = null;
 		try {
 			//1. 키보드 연결
 			sc = new Scanner(System.in);
@@ -30,18 +27,17 @@ public class ChatClient {
 			socket.connect(inetSocketAddress);
 			
 			//4. reader/writer 생성
-			br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+			
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
 			
 			//5. join 프로토콜
 			System.out.print("닉네임>>" );
 			String nickname = sc.nextLine();
-			pw.println(nickname);
+			pw.println("join:"+nickname);
 			pw.flush();
 
 			//6. ChatClientThread 시작
-			Thread chatClientThread = new ChatClientThread(br);
-			chatClientThread.start();
+			new ChatClientThread(socket).start();
 			
 			
 			//7. 키보드 입력 처리
@@ -53,27 +49,20 @@ public class ChatClient {
 					pw.println("quit");					
 					break;
 				} 
-				pw.println(input);
+				pw.println("message:"+input);
 			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				if(br== null && socket != null && !socket.isClosed()) {
-					socket.close();
-				}
-				if(sc != null) {
-					sc.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			if(sc != null) {
+				sc.close();
 			}
 		}
 		
 		
 	}
 	public static void log(String log) {
-		System.out.println("[Echo CLient] " + log);
+		System.out.println("[CLient] " + log);
 	}
 }
