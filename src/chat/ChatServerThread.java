@@ -81,7 +81,7 @@ public class ChatServerThread extends Thread {
 		users.add(user);
 		user.setName(name);
 		user.setPw(pw);
-		pw.println("채팅에 참여합니다.");
+		pw.println("join");
 		broadcast(" 님이 입장하였습니다.");
 	}
 	

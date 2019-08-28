@@ -21,9 +21,12 @@ public class ChatClientThread extends Thread {
 				
 				// 5. 데이터 읽기
 				String data = br.readLine();	// blocking
+				
 				if(data == null || "quit".equals(data)) {
 					ChatClient.log("closed by Server");
 					break;
+				} else if ("join".equals(data)) {
+					data = "채팅에 참여합니다.";
 				}
 				// 6. 콘솔 출력
 				System.out.println(data);
